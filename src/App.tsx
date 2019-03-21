@@ -21,9 +21,9 @@ class App extends TaskTemplate {
         return () => <GraphVisualizer />;
     }
 
-    public getAres() {
-        return (
-            () => <div id={'my-canvas'}></div>
+    public getArea() {
+        return () => (
+            <div id={'my-canvas'}></div>
         )
     }
 
