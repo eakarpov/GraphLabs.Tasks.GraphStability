@@ -26,7 +26,7 @@ export default class Tree {
         hasVertexError: false,
         hasWeightError: false,
         position: {x: this.svg.tree.cx, y: this.svg.tree.cy},
-        children: []
+        children: [],
     });
     private activeId?: number = void 0;
 
@@ -110,7 +110,7 @@ export default class Tree {
 
         const temp1 = circles.enter().append('circle')
             .attr('cx', d => {
-                const parent = this.treeNode.deepNodeSearch((e) => e.children.some(t => t.getId() === d.getId()));
+                const parent = this.treeNode.deepNodeSearch((e: TreeNode) => e.children.some((t: TreeNode) => t.getId() === d.getId()));
                 if (parent) {
                     return parent.getPosition().x
                 } else {
@@ -118,7 +118,7 @@ export default class Tree {
                 }
             })
             .attr('cy', d => {
-                const parent = this.treeNode.deepNodeSearch((e) => e.children.some(t => t.getId() === d.getId()));
+                const parent = this.treeNode.deepNodeSearch((e: TreeNode) => e.children.some((t: TreeNode) => t.getId() === d.getId()));
                 if (parent) {
                     return parent.getPosition().y
                 } else {
@@ -155,7 +155,7 @@ export default class Tree {
 
         const temp2 = labels.enter().append('text')
             .attr('x', (d) => {
-                const parent = this.treeNode.deepNodeSearch((e) => e.children.some(t => t.getId() === d.getId()));
+                const parent = this.treeNode.deepNodeSearch((e: TreeNode) => e.children.some((t: TreeNode) => t.getId() === d.getId()));
                 if (parent) {
                     return parent.getPosition().x
                 } else {
@@ -163,7 +163,7 @@ export default class Tree {
                 }
             })
             .attr('y', (d) => {
-                const parent = this.treeNode.deepNodeSearch((e) => e.children.some(t => t.getId() === d.getId()));
+                const parent = this.treeNode.deepNodeSearch((e: TreeNode) => e.children.some((t: TreeNode) => t.getId() === d.getId()));
                 if (parent) {
                     return parent.getPosition().y + 5
                 } else {
@@ -182,7 +182,7 @@ export default class Tree {
 
     private getLeafCount(node: TreeNode): number {
         if (node.children.length === 0) { return 1; }
-        return node.children.map((e) => this.getLeafCount(e)).reduce((a, b) => a + b);
+        return node.children.map((e: TreeNode) => this.getLeafCount(e)).reduce((a, b) => a + b);
     }
 
     private rePosition(node:TreeNode = this.treeNode) {
