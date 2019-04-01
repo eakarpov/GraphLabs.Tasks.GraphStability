@@ -1,12 +1,12 @@
 import * as React from 'react';
-import {GraphVisualizer, TaskTemplate, TaskToolbar, ToolButtonList} from 'graphlabs.core.template';
+import {Template, Toolbar, ToolButtonList, GraphVisualizer} from 'graphlabs.core.template';
 import Tree from "./tree";
 
-class App extends TaskTemplate {
+class App extends Template {
     private tree?: Tree;
 
-    constructor() {
-        super({});
+    constructor(props: any) {
+        super(props);
     }
 
     public componentDidMount(): void {
@@ -19,17 +19,17 @@ class App extends TaskTemplate {
     // }
 
     public task() {
-        return () => <GraphVisualizer />;
+        return () => <GraphVisualizer/>
     }
 
     public getArea() {
         return (
             () => <div id={'my-canvas'}/>
-        )
+            )
     }
 
     public getTaskToolbar() {
-        TaskToolbar.prototype.getButtonList = () => {
+        Toolbar.prototype.getButtonList = () => {
             ToolButtonList.prototype.help = () => `В данном задании вы должны построить дерево, посадить сына и срубить дом`;
             ToolButtonList.prototype.toolButtons = {
                 '+': () => {
@@ -41,8 +41,8 @@ class App extends TaskTemplate {
             };
             return ToolButtonList;
         };
-        return TaskToolbar;
+        return Toolbar;
     }
 }
 
-export default App;
+export default App
