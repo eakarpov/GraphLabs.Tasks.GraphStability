@@ -1,16 +1,17 @@
 import * as React from 'react';
-import {GraphVisualizer, TaskTemplate, TaskToolbar, ToolButtonList} from 'graphlabs.core.template';
-import Tree from "./tree";
+import {GraphVisualizer, Template, Toolbar, ToolButtonList} from 'graphlabs.core.template';
+// import Tree from "./tree";
 
-class App extends TaskTemplate {
-    private readonly tree: Tree;
+class App extends Template {
+    // private readonly tree: Tree;
+    constructor(props: {}) {
+        super(props);
 
-    constructor() {
-        super({});
-        this.tree = new Tree();
+        // this.tree = new Tree();
     }
 
     public calculate() {
+        // tslint:disable
         console.log("calculate (App.js)");
         let res = 10;
         return {success: res === 0, fee: res};
@@ -21,7 +22,7 @@ class App extends TaskTemplate {
         return () => <GraphVisualizer />;
     }
 
-    public getAres() {
+    public getArea() {
         return (
             () => <div id={'my-canvas'}></div>
         )
@@ -29,21 +30,21 @@ class App extends TaskTemplate {
 
     public getTaskToolbar() {
         console.log("getTaskToolbar (App.js): возвращаем панель инструментов, начало");
-        TaskToolbar.prototype.getButtonList = () => {
+        Toolbar.prototype.getButtonList = () => {
             ToolButtonList.prototype.help = () => `В данном задании вы должны построить дерево, посадить сына и срубить дом`;
             ToolButtonList.prototype.toolButtons = {
                 '+': () => {
-                    if (this.tree) this.tree.addLeaf()
+                    // if (this.tree) this.tree.addLeaf()
                 },
                 '-': () => {
-                    if (this.tree) this.tree.removeLeaf()
+                    // if (this.tree) this.tree.removeLeaf()
                 }
             };
             console.log("getTaskToolbar (App.js): возвращаем список кнопок на пенли инструментов");
             return ToolButtonList;
         };
         console.log("getTaskToolbar (App.js): возвращаем панель инструментов со всеми кнопками");
-        return TaskToolbar;
+        return Toolbar;
     }
 }
 

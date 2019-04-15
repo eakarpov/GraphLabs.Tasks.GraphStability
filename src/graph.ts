@@ -40,7 +40,7 @@ export function getNonNeighbours(vertex: Vertex, graph: Graph<Vertex, Edge>) {
     return answer
 }
 
-export function getSubgraph(subVertices: string[], graph: Graph<Vertex, Edge>) {
+export function getSubgraph(subVertices: string[] = [], graph: Graph<Vertex, Edge>) {
     console.log("getSubgraph (TaskGraph.js): строим подграф графа");
     const subGraph = Graph.createEmpty(0);
     graph.vertices.filter(v => subVertices.includes(v.name)).forEach(v => subGraph.addVertex(v));
