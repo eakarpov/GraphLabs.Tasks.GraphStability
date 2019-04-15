@@ -9,7 +9,7 @@
     "@types/react-dom": "16.8.2",
     "d3": "^5.9.2",
     "graphlabs.core.notifier": "0.0.29",
-    "graphlabs.core.template": "^0.1.41",
+    "graphlabs.core.template": "^1.0.14",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
     "react-scripts": "2.1.8",
