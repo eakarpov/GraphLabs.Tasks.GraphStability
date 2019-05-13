@@ -1,36 +1,45 @@
 import * as React from 'react';
-import {Template, Toolbar, ToolButtonList, GraphVisualizer} from 'graphlabs.core.template';
+import {store, Template, Toolbar, ToolButtonList, GraphVisualizer} from 'graphlabs.core.template';
 import Tree from "./tree";
 
 class App extends Template {
     private tree?: Tree;
 
-    constructor(props: any) {
+    constructor(props: {}) {
         super(props);
+        this.calculate = this.calculate.bind(this);
+        this.handler = this.handler.bind(this);
     }
 
     public componentDidMount(): void {
         this.tree = new Tree();
     }
 
-    // public calculate() {
-    //     let res = 10;
-    //     return {success: res === 0, fee: res};
-    // }
+    public handler(values: number[][]) {
+
+    }
+
+    public calculate() {
+        const res = 0;
+        return { success: res === 0, fee: res };
+    }
 
     public task() {
-        return () => <GraphVisualizer/>
+        return () => (<div>
+          <div>Найдите все пустые подграфы приведенного ниже графа с помощью алгоритма построения дерева</div>
+          <GraphVisualizer/>
+        </div>)
     }
 
     public getArea() {
         return (
             () => <div id={'my-canvas'}/>
-            )
+          )
     }
 
     public getTaskToolbar() {
         Toolbar.prototype.getButtonList = () => {
-            ToolButtonList.prototype.help = () => `В данном задании вы должны построить дерево, посадить сына и срубить дом`;
+            ToolButtonList.prototype.help = () => `Для добавления пустого подграфа в ответ нажмите кнопку 'Ввести пустой подграф'`;
             ToolButtonList.prototype.toolButtons = {
                 '+': () => {
                     if (this.tree) { this.tree.addLeaf() }
