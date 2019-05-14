@@ -42,10 +42,10 @@ class App extends Template {
             ToolButtonList.prototype.help = () => `Для добавления пустого подграфа в ответ нажмите кнопку 'Ввести пустой подграф'`;
             ToolButtonList.prototype.toolButtons = {
                 '+': () => {
-                    if (this.tree) { this.tree.addLeaf() }
+                    if (this.tree) { this.tree.addChild() }
                 },
                 '-': () => {
-                    if (this.tree) { this.tree.removeLeaf() }
+                    if (this.tree) { this.tree.removeNode() }
                 }
             };
             return ToolButtonList;
