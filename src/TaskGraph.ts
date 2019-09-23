@@ -4,22 +4,20 @@ export class TaskGraph {
 
   /**
    * Get subgraph of graph
-   * input: vertives
+   * input: vertices
    */
-   public static getSubgraph(subVertices: Vertex[], graph: Graph<Vertex,Edge>): Graph<Vertex, Edge>{
-     console.log("subGraph input", subVertices, graph);
+  public static getSubgraph(subVertices: Vertex[], graph: Graph<Vertex,Edge>): Graph<Vertex, Edge>
+  {
       const subGraph = new Graph<Vertex, Edge>();
-      console.log("taskgraph 13")
       if (typeof subVertices !== "undefined") {
-        subVertices.forEach(v => {
+          subVertices.forEach(v => {
             subGraph.addVertex(v);
-        });
-        console.log("taskgraph 18")
-        graph.edges.filter(e =>
-                (subVertices.map(v => v.name).includes(e.vertexOne.name))
-                &&  (subVertices.map(v => v.name).includes(e.vertexTwo.name))).forEach((e: Edge) => subGraph.addEdge(new Edge(e.vertexOne, e.vertexTwo)));
-        //console.log("subgraph", subGraph);
-    }
+          });
+          graph.edges.filter(e =>
+            (subVertices.map(v => v.name).indexOf(e.vertexOne.toString()) !== -1)
+            &&  (subVertices.map(v => v.name).indexOf(e.vertexTwo.toString())) !== -1)
+            .forEach((e: Edge) => subGraph.addEdge(new Edge(e.vertexOne, e.vertexTwo)));
+      }
       return subGraph;
   }
 
@@ -27,77 +25,35 @@ export class TaskGraph {
    * Get neighbourhood
    */
   public static getNeighbourhood(vertex: Vertex, graph: Graph<Vertex,Edge>): Vertex[] {
-    /*return graph.vertices.reduce((accum: Vertex[], next: Vertex) => {
-            graph.edges.forEach(e => {
-              if (e.vertexOne === vertex) accum.push(e.vertexTwo as Vertex);
-              if (e.vertexTwo === vertex) accum.push(e.vertexOne as Vertex);
-            });
-            return accum;
-          }, []);*/
-        //  public static getNeighbourhood(vertex: Vertex, graph: Graph<Vertex,Edge>): Vertex[] {
-      console.log("hello");
-      /*const set = graph.edges.reduce((accum: Set<string>, next: Edge) => {
-        if (<Vertex>next.vertexOne == vertex) {
-          accum.add(next.vertexTwo.name);
-          console.log("im here");
-        }
-        if (<Vertex>next.vertexTwo == vertex) {
-          accum.add(next.vertexOne.name);
-          console.log("im here");
-        }
-        return accum;
-      }, new Set<string>());
-      return graph.vertices.reduce((vertices: Vertex[], n: Vertex) => {
-        if (n.name in set) {
-          vertices.push(vertex);
-        }
-        return vertices;
-      }, [])*/
-      let answer: Vertex[] = [];
-      const answerNames: string[] = [];
-      //answerNames.push("hello");
+      let answerNames: string[] = [];
       if (graph.edges.length > 0) {
-        console.log("taskgraph 61")
         graph.edges.forEach(e => {
-          if (e.vertexOne.name === vertex.name) {
-            answerNames.push(e.vertexTwo.name)
+          if (e.vertexOne.toString() === vertex.name) {
+            answerNames.push(e.vertexTwo.toString())
           }
-          if (e.vertexTwo.name === vertex.name) {
-            answerNames.push(e.vertexOne.name)
+          if (e.vertexTwo.toString() === vertex.name) {
+            answerNames.push(e.vertexOne.toString())
           }
         })
-    }
-      answer = graph.vertices.filter(v =>
-        answerNames.includes(v.name))
-      return answer;
+      }
+      return graph.vertices.filter(v => answerNames.includes(v.name))
   }
 
   /**
    * Get non-neighbourhood
    */
   public static getNonNeighbourhood(vertex: Vertex, graph: Graph<Vertex,Edge>): Vertex[] {
-      console.log("nonn input", vertex, graph);
-      /*vertex = (!!vertex.name) ? vertex: {name: <any>vertex as string} as Vertex;
-      const neighbours = TaskGraph.getNeighbourhood(vertex , graph);*/
-      const neighbours :Vertex[] = TaskGraph.getNeighbourhood(vertex, graph);
-      console.log("neigb",neighbours);
+      const neighbours : Vertex[] = TaskGraph.getNeighbourhood(vertex, graph);
       neighbours.push(vertex);
-      console.log("neigb",neighbours);
-      /*const answer = graph.vertices.reduce((accum: Vertex[], next: Vertex) => {
-          const n: Vertex = (!!next.name) ? next: {name: <any>vertex as string} as Vertex;
-          return (neighbours.indexOf(<any>n.name as Vertex) >= 0) ?
-              accum : accum.concat(<any>n.name as Vertex)}, [])*/
-      const answer = graph.vertices.filter(v => !neighbours.map(n => n.name).includes(v.name))
-      console.log(answer);
-      console.log("nonn end", vertex, graph);
-      return answer
+      return graph.vertices.filter(v => !neighbours.map(n => n.name).includes(v.name))
   }
 
   /**
    * Get vertex's degree
    */
   public static getVertexDegree(vertex: Vertex, graph: Graph<Vertex,Edge>): number {
-    return graph.edges.filter((e: Edge) => (e.vertexOne === vertex) || (e.vertexTwo === vertex)).length;
+    return graph.edges.filter((e: Edge) => (e.vertexOne.toString() === vertex.name)
+        || (e.vertexTwo.toString() === vertex.name)).length;
   }
 
   /**

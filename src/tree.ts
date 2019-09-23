@@ -62,7 +62,6 @@ export default class Tree {
                     p2: c.weight.position
                 });
             });
-            console.log("tree 78")
             node.children.forEach(getEdges);
           }
         };
