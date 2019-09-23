@@ -20,7 +20,7 @@ class App extends Template {
     }
 
     public calculate() {
-        let res = 0;
+        const res = 0;
         return { success: res === 0, fee: res };
     }
 
