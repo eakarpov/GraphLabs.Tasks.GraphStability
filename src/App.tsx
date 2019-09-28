@@ -1,51 +1,57 @@
 import * as React from 'react';
-import {GraphVisualizer, Template, Toolbar, ToolButtonList} from 'graphlabs.core.template';
-// import Tree from "./tree";
+import {Template, Toolbar, ToolButtonList, GraphVisualizer} from 'graphlabs.core.template';
+import Tree from "./tree";
 
 class App extends Template {
-    // private readonly tree: Tree;
+    private tree?: Tree;
+
     constructor(props: {}) {
         super(props);
+        this.calculate = this.calculate.bind(this);
+        this.handler = this.handler.bind(this);
+    }
 
-        // this.tree = new Tree();
+    public componentDidMount(): void {
+        this.tree = new Tree();
+    }
+
+    public handler(values: number[][]) {
+        // Do nothing
     }
 
     public calculate() {
-        // tslint:disable
-        console.log("calculate (App.js)");
-        let res = 10;
-        return {success: res === 0, fee: res};
+        const res = 0;
+        return { success: res === 0, fee: res };
     }
 
     public task() {
-        console.log("task (App.js)");
-        return () => <GraphVisualizer />;
+        return () => (<div>
+          <div>Найдите все пустые подграфы приведенного ниже графа с помощью алгоритма построения дерева</div>
+          <GraphVisualizer/>
+        </div>)
     }
 
     public getArea() {
         return (
-            () => <div id={'my-canvas'}></div>
-        )
+            () => <div id={'my-canvas'}/>
+          )
     }
 
     public getTaskToolbar() {
-        console.log("getTaskToolbar (App.js): возвращаем панель инструментов, начало");
         Toolbar.prototype.getButtonList = () => {
-            ToolButtonList.prototype.help = () => `В данном задании вы должны построить дерево, посадить сына и срубить дом`;
+            ToolButtonList.prototype.help = () => `Для добавления пустого подграфа в ответ нажмите кнопку 'Ввести пустой подграф'`;
             ToolButtonList.prototype.toolButtons = {
-                '+': () => {
-                    // if (this.tree) this.tree.addLeaf()
+                'https://img.icons8.com/metro/26/000000/plus-math.png': () => {
+                    if (this.tree) { this.tree.addChild() }
                 },
-                '-': () => {
-                    // if (this.tree) this.tree.removeLeaf()
+                'https://img.icons8.com/metro/26/000000/minus-math.png': () => {
+                    if (this.tree) { this.tree.removeNode() }
                 }
             };
-            console.log("getTaskToolbar (App.js): возвращаем список кнопок на пенли инструментов");
             return ToolButtonList;
         };
-        console.log("getTaskToolbar (App.js): возвращаем панель инструментов со всеми кнопками");
         return Toolbar;
     }
 }
 
-export default App;
+export default App
