@@ -100,37 +100,55 @@ export default class Tree {
             return;
         }
         else {
-          const vertexName = prompt("Введите имя вершины") || '';
-          const vertexArray = prompt("Введите множество вершин (числа через пробел") || '';
-          // проверяем введенную сроку на соответствующий формат
-          if (!(/^[0-9]+(\s+[0-9]+)*$/.test(vertexArray) || /^\s*$/.test(vertexArray))) {
-              alert("Пожалуйста, укажите множество вершин через пробел");
-              return;
+          const vertexName = prompt("Введите имя вершины");
+          if (vertexName == null) {
+              alert("Ввод вершины отменен");
           }
-          const vertexNames = vertexArray.split(' ');
-          const vertexError = this.checkVertex(this.tree.getNodeById(this.activeId), vertexName);
-          const vertice = this.graph.vertices.find(v => v.name === vertexName);
-          if (vertice) {
-              this.tree.addChild(
-                  this.activeId,
-                  vertexName,
-                  {
-                      parentId: this.activeId,
-                      graph: TaskGraph.getSubgraph(this.graph.vertices.filter(v => vertexNames.includes(v.name)),
-                          this.tree.getNodeById(this.activeId).weight.graph),
-                      realWeight: TaskGraph.getNeighbourhood(vertice,
-                          this.tree.getNodeById(this.activeId).weight.graph),
-                      inputWeight: this.graph.vertices.filter(v => vertexNames.includes(v.name)),
-                      hasVertexError: vertexError,
-                      hasWeightError: this.checkWeigth(vertexError,
-                          TaskGraph.getNeighbourhood(vertice,
-                              this.tree.getNodeById(this.activeId).weight.graph),
-                          this.graph.vertices.filter(v => vertexNames.includes(v.name))),
-                      position: {x: this.svg.tree.cx, y: this.svg.tree.cy}
+          else {
+              const vertexArray = prompt("Введите множество вершин (числа через пробел");
+              if (vertexArray == null) {
+                  alert("Ввод вершины отменен");
+              }
+              else {
+                  store.dispatch({
+                      type: "@@notifier/add_action",
+                      payload: {
+                          fee: 0,
+                          datetime: new Date(),
+                          message: "Добавляется вершина " + vertexName + " с весом " + vertexArray
+                      }
+                  })
+                  // проверяем введенную сроку на соответствующий формат
+                  if (!(/^[0-9]+(\s+[0-9]+)*$/.test(vertexArray) || /^\s*$/.test(vertexArray))) {
+                      alert("Пожалуйста, укажите множество вершин через пробел");
+                      return;
                   }
-              );
-              this.rePosition();
-              this.redraw();
+                  const vertexNames = vertexArray.split(' ');
+                  const vertexError = this.checkVertex(this.tree.getNodeById(this.activeId), vertexName);
+                  const vertex = this.graph.vertices.find(v => v.name === vertexName);
+                  if (vertex) {
+                      this.tree.addChild(
+                          this.activeId,
+                          vertexName,
+                          {
+                              parentId: this.activeId,
+                              graph: TaskGraph.getSubgraph(this.graph.vertices.filter(v => vertexNames.includes(v.name)),
+                                  this.tree.getNodeById(this.activeId).weight.graph),
+                              realWeight: TaskGraph.getNonNeighbourhood(vertex,
+                                  this.tree.getNodeById(this.activeId).weight.graph),
+                              inputWeight: this.graph.vertices.filter(v => vertexNames.includes(v.name)),
+                              hasVertexError: vertexError,
+                              hasWeightError: this.checkWeigth(vertexError,
+                                  TaskGraph.getNonNeighbourhood(vertex,
+                                      this.tree.getNodeById(this.activeId).weight.graph),
+                                  this.graph.vertices.filter(v => vertexNames.includes(v.name))),
+                              position: {x: this.svg.tree.cx, y: this.svg.tree.cy}
+                          }
+                      );
+                      this.rePosition();
+                      this.redraw();
+                  }
+              }
           }
       }
     };
@@ -151,7 +169,7 @@ export default class Tree {
                             // проверка, входит ли добавляемая вершина в окрестность первого узла потомка
                             const firstChild = this.tree.getNodeById(Math.min(...parent.children.map(e => e.getId())));
                             const vertice = this.graph.vertices.find(v => v.name === firstChild.label);
-                            if (!vertice) { throw new Error("fhfghdsfdfghdfhf"); }
+                            if (!vertice) { throw new Error("Вершина не найдена"); }
                             if (TaskGraph.getNeighbourhood(vertice, parent.weight.graph).map(v => v.name).includes(vertexName)) {
                                 return false
                             }
@@ -161,7 +179,7 @@ export default class Tree {
                                     payload: {
                                         fee: 5,
                                         datetime: new Date(),
-                                        message: "Введенная вершина не входит в окрестность первого потомка выбранной вершины"
+                                        message: "Введенная вершина " + vertexName + " не входит в окрестность первого потомка выбранной вершины " + parent.label
                                     }
                                 })
                                 return true;
@@ -171,12 +189,12 @@ export default class Tree {
                             store.dispatch({
                                 type: "@@notifier/add_action",
                                 payload: {
-                                    fee: 5,
+                                    fee: 0,
                                     datetime: new Date(),
-                                    message: "У выбранной вершины уже есть потомок с этим именем"
+                                    message: "У выбранной вершины уже есть потомок с именем "  + vertexName
                                 }
                             })
-                            return true;
+                            return false;
                         }
                     }
                 }
@@ -186,19 +204,20 @@ export default class Tree {
                         payload: {
                             fee: 5,
                             datetime: new Date(),
-                            message: "Вершины с данным именем нет в графе, соответствующем узлу-родителю"
+                            message: "Вершины с именем " + vertexName + " нет в графе, соответствующем узлу-родителю"
                         }
                     })
                     return true;
                 }
             }
             else {
+                alert("Вершины с именем " + vertexName + " нет в исходном графе, попробуйте вершину с другим именем");
                 store.dispatch({
                     type: "@@notifier/add_action",
                     payload: {
-                        fee: 5,
+                        fee: 0,
                         datetime: new Date(),
-                        message: "Вершины с данным именем нет в исходом графе"
+                        message: "Вершины с именем " + vertexName + " нет в исходном графе, попробуйте вершину с другим именем"
                     }
                 })
                 return true;
@@ -233,7 +252,7 @@ export default class Tree {
                         payload: {
                             fee: 0,
                             datetime: new Date(),
-                            message: "Введеное множество вершин неверно"
+                            message: "Введеное множество вершин " + input.map(i => i.name) + " неверно"
                         }
                     })
                     return true;
@@ -289,14 +308,14 @@ export default class Tree {
             .attr('cx', d => d.weight.position.x)
             .attr('cy', d => d.weight.position.y)
             .attr('class', (d) => {
-                return d.weight.hasVertexError ? (d.getId() === this.activeId ? 'activeError' : 'error') : (d.getId() === this.activeId ? 'active' : "")
+                return (d.weight.hasVertexError || d.weight.hasWeightError) ? (d.getId() === this.activeId ? 'activeError' : 'error') : (d.getId() === this.activeId ? 'active' : "")
             });
 
         circles.transition().duration(500)
             .attr('cx', d => d.weight.position.x)
             .attr('cy', d => d.weight.position.y)
             .attr('class', (d) => {
-                return d.weight.hasVertexError ? (d.getId() === this.activeId ? 'activeError' : 'error') : (d.getId() === this.activeId ? 'active' : "")
+                return (d.weight.hasVertexError || d.weight.hasWeightError) ? (d.getId() === this.activeId ? 'activeError' : 'error') : (d.getId() === this.activeId ? 'active' : "")
             });
 
         circles.exit().remove();
@@ -344,7 +363,6 @@ export default class Tree {
         const lC = this.getLeafCount(node);
         let left = node.weight.position.x - this.svg.tree.w * (lC - 1) / 2;
         if (node.children.length > 0) {
-          console.log("tree 345")
           node.children.forEach((d) => {
               const w = this.svg.tree.w * this.getLeafCount(d);
               left += w;
