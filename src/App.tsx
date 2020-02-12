@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Template, Toolbar, ToolButtonList, GraphVisualizer} from 'graphlabs.core.template';
+import {Template, Toolbar, ToolButtonList, GraphVisualizer, graphModel} from 'graphlabs.core.template';
 import Tree from "./tree";
 
 class App extends Template {
@@ -27,7 +27,7 @@ class App extends Template {
     public task() {
         return () => (<div>
           <div>Найдите все пустые подграфы приведенного ниже графа с помощью алгоритма построения дерева</div>
-          <GraphVisualizer/>
+          <GraphVisualizer graph = {graphModel} adapterType = {'readable'} />
         </div>)
     }
 
