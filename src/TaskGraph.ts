@@ -25,7 +25,7 @@ export class TaskGraph {
    * Get neighbourhood
    */
   public static getNeighbourhood(vertex: Vertex, graph: Graph<Vertex,Edge>): Vertex[] {
-      let answerNames: string[] = [];
+      const answerNames: string[] = [];
       if (graph.edges.length > 0) {
         graph.edges.forEach(e => {
           if (e.vertexOne.toString() === vertex.name) {
@@ -36,7 +36,8 @@ export class TaskGraph {
           }
         })
       }
-      return graph.vertices.filter(v => answerNames.includes(v.name))
+      return graph.vertices
+      /*return graph.vertices.filter(v => answerNames.includes(v.name))*/
   }
 
   /**
@@ -45,7 +46,8 @@ export class TaskGraph {
   public static getNonNeighbourhood(vertex: Vertex, graph: Graph<Vertex,Edge>): Vertex[] {
       const neighbours : Vertex[] = TaskGraph.getNeighbourhood(vertex, graph);
       neighbours.push(vertex);
-      return graph.vertices.filter(v => !neighbours.map(n => n.name).includes(v.name))
+      /*return graph.vertices.filter(v => !neighbours.map(n => n.name).includes(v.name))*/
+      return graph.vertices
   }
 
   /**

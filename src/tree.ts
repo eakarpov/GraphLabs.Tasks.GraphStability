@@ -3,16 +3,22 @@ import { store } from 'graphlabs.core.template';
 import {Edge, Vertex, Graph} from "graphlabs.core.graphs";
 import {TreeNode} from './TreeNode';
 import {TaskGraph} from './TaskGraph';
+import _ from "lodash";
 
 import * as d3 from 'd3';
 
 class StabilityTreeNode extends TreeNode<{
-      parentId: number, graph: Graph<Vertex,Edge>, realWeight: Vertex[], inputWeight: Vertex[],
-      hasVertexError: boolean, hasWeightError: boolean, position: {x: number, y: number}
-    }> {
-
-      public children: StabilityTreeNode[] = [];
-};
+    parentId: number,
+    graph: Graph<Vertex,Edge>,
+    inputWeight: string[],
+    hasVertexError: boolean,
+    hasWeightError: boolean,
+    position: {
+        x: number,
+        y: number
+    }}> {
+        public children: StabilityTreeNode[] = [];
+    };
 
 export default class Tree {
     private svg: any = {
@@ -27,21 +33,23 @@ export default class Tree {
         }
     };
 
-    public graph: Graph<Vertex, Edge> = store.getState().graph;
+    private graph: Graph<Vertex, Edge> = store.getState().graph;
 
-    public lastId: number = 0;
+    private lastId: number = 0;
 
     private activeId?: number = void 0;
 
-    public tree: StabilityTreeNode = new StabilityTreeNode(
+    private tree: StabilityTreeNode = new StabilityTreeNode(
         'G',
         {parentId: this.lastId,
         graph: this.graph,
-        realWeight: this.graph.vertices,
-        inputWeight: this.graph.vertices,
+        inputWeight: this.graph.vertices.map(v => v.name),
         hasVertexError: false,
         hasWeightError: false,
-        position: {x: this.svg.tree.cx, y: this.svg.tree.cy}
+        position: {
+            x: this.svg.tree.cx,
+            y: this.svg.tree.cy
+        }
     });
 
     constructor() {
@@ -102,163 +110,149 @@ export default class Tree {
         else {
           const vertexName = prompt("Введите имя вершины");
           if (vertexName == null) {
-              alert("Ввод вершины отменен");
+              alert("Вершина не добавлена");
           }
           else {
-              const vertexArray = prompt("Введите множество вершин (числа через пробел");
+              const vertexArray = prompt("Введите множество имен вершин (через пробел");
               if (vertexArray == null) {
-                  alert("Ввод вершины отменен");
+                  alert("Вершина не добавлена");
               }
               else {
-                  store.dispatch({
-                      type: "@@notifier/add_action",
-                      payload: {
-                          fee: 0,
-                          datetime: new Date(),
-                          message: "Добавляется вершина " + vertexName + " с весом " + vertexArray
-                      }
-                  })
-                  // проверяем введенную сроку на соответствующий формат
-                  if (!(/^[0-9]+(\s+[0-9]+)*$/.test(vertexArray) || /^\s*$/.test(vertexArray))) {
-                      alert("Пожалуйста, укажите множество вершин через пробел");
+                  // проверка введенной строки на соответствующий формат
+                  if (!(/^\s*[0-9]+(\s+[0-9]+)*\s*$/.test(vertexArray) || /^\s*$/.test(vertexArray))) {
+                      alert("Пожалуйста, укажите множество имен вершин через пробел");
                       return;
                   }
-                  const vertexNames = vertexArray.split(' ');
+                  const vertexNames = vertexArray.replace(/\s+/g, ' ').trim().split(' ');
                   const vertexError = this.checkVertex(this.tree.getNodeById(this.activeId), vertexName);
-                  const vertex = this.graph.vertices.find(v => v.name === vertexName);
-                  if (vertex) {
-                      this.tree.addChild(
-                          this.activeId,
-                          vertexName,
-                          {
-                              parentId: this.activeId,
-                              graph: TaskGraph.getSubgraph(this.graph.vertices.filter(v => vertexNames.includes(v.name)),
-                                  this.tree.getNodeById(this.activeId).weight.graph),
-                              realWeight: TaskGraph.getNonNeighbourhood(vertex,
-                                  this.tree.getNodeById(this.activeId).weight.graph),
-                              inputWeight: this.graph.vertices.filter(v => vertexNames.includes(v.name)),
-                              hasVertexError: vertexError,
-                              hasWeightError: this.checkWeigth(vertexError,
-                                  TaskGraph.getNonNeighbourhood(vertex,
-                                      this.tree.getNodeById(this.activeId).weight.graph),
-                                  this.graph.vertices.filter(v => vertexNames.includes(v.name))),
-                              position: {x: this.svg.tree.cx, y: this.svg.tree.cy}
+                  console["log"](vertexError)
+                  const weightError = this.checkWeigth(vertexError.value, this.tree.getNodeById(this.activeId), vertexName, vertexNames);
+                  console["log"](weightError)
+                  this.tree.addChild(
+                      this.activeId,
+                      vertexName,
+                      {
+                          parentId: this.activeId,
+                          graph: TaskGraph.getSubgraph(this.graph.vertices.filter(v => vertexNames.indexOf(v.label) > -1),
+                              this.tree.getNodeById(this.activeId).weight.graph),
+                          inputWeight: vertexNames,
+                          hasVertexError: vertexError.value,
+                          hasWeightError: weightError.value,
+                          position: {x: this.svg.tree.cx, y: this.svg.tree.cy}
+                      });
+                  this.rePosition();
+                  this.redraw();
+                  if (vertexError.value) {
+                      store.dispatch({
+                          type: "@@notifier/add_action",
+                          payload: {
+                              fee: vertexError.score,
+                              datetime: new Date(),
+                              message: "Добавлена вершина " + vertexName + " с весом {" + vertexNames + "}. " +
+                                  vertexError.type
                           }
-                      );
-                      this.rePosition();
-                      this.redraw();
+                      })
                   }
+                  else {
+                      store.dispatch({
+                          type: "@@notifier/add_action",
+                          payload: {
+                              fee: weightError.score,
+                              datetime: new Date(),
+                              message: "Добавлена вершина " + vertexName + " с весом {" + vertexNames + "}. " +
+                                  weightError.type
+                          }
+                      })
+                  }
+                  }
+
               }
           }
-      }
     };
 
     public checkVertex(parent: StabilityTreeNode, vertexName: string) {
         if (this.activeId) {
             // проверка, есть ли введенная вершина в графе
-            if (this.tree.weight.graph.vertices.map(e => e.name).includes(vertexName)) {
+            if (this.tree.weight.graph.vertices.map(e => e.name).indexOf(vertexName) > -1) {
                 // проверка, есть ли введенная вершина в графе, соответствующем узлу-родителю
-                if (parent.weight.graph.vertices.map(e => e.name).includes(vertexName)) {
+                if (parent.weight.graph.vertices.map(e => e.name).indexOf(vertexName) > -1) {
                     // проверка, есть ли у вершины родителя еще потомки
                     if (this.tree.getNodeById(this.activeId).children.length === 0) {
-                        return false
+                        return {value: false, type: "", score: 0};
                     }
                     else {
                         // проверка, дублирует ли введенная вершина одну из вершин своего уровня
-                        if (!parent.children.map(e => e.label).includes(vertexName)) {
+                        if (!(parent.children.map(e => e.label).indexOf(vertexName) > -1)) {
                             // проверка, входит ли добавляемая вершина в окрестность первого узла потомка
                             const firstChild = this.tree.getNodeById(Math.min(...parent.children.map(e => e.getId())));
                             const vertice = this.graph.vertices.find(v => v.name === firstChild.label);
-                            if (!vertice) { throw new Error("Вершина не найдена"); }
-                            if (TaskGraph.getNeighbourhood(vertice, parent.weight.graph).map(v => v.name).includes(vertexName)) {
-                                return false
+                            if (!vertice) {
+                                return {value: true, type: "Так как первая вершина уровня выбрана неверно, данная вершина также считается неверной", score: 0};
                             }
                             else {
-                                store.dispatch({
-                                    type: "@@notifier/add_action",
-                                    payload: {
-                                        fee: 5,
-                                        datetime: new Date(),
-                                        message: "Введенная вершина " + vertexName + " не входит в окрестность первого потомка выбранной вершины " + parent.label
-                                    }
-                                })
-                                return true;
+                                if (TaskGraph.getNeighbourhood(vertice, parent.weight.graph).map(v => v.name).indexOf(vertexName)) {
+                                    return {value: false, type: "", score: 0};
+                                }
+                                else {
+                                    return {value: true, type: "Неверное имя вершины: данная вершина не смежна с первой вершиной уровня", score: 5};
+                                }
                             }
                         }
                         else {
-                            store.dispatch({
-                                type: "@@notifier/add_action",
-                                payload: {
-                                    fee: 0,
-                                    datetime: new Date(),
-                                    message: "У выбранной вершины уже есть потомок с именем "  + vertexName
-                                }
-                            })
-                            return false;
+                            return {value: true, type: "Неверное имя вершины: данная вершина совпадает с первой вершиной уровня", score: 5};
                         }
                     }
                 }
                 else {
-                    store.dispatch({
-                        type: "@@notifier/add_action",
-                        payload: {
-                            fee: 5,
-                            datetime: new Date(),
-                            message: "Вершины с именем " + vertexName + " нет в графе, соответствующем узлу-родителю"
-                        }
-                    })
-                    return true;
+                    return {value: true, type: "Неверное имя вершины: вершины с таким именем нет в весе узла-родителя", score: 5};
                 }
             }
             else {
-                alert("Вершины с именем " + vertexName + " нет в исходном графе, попробуйте вершину с другим именем");
-                store.dispatch({
-                    type: "@@notifier/add_action",
-                    payload: {
-                        fee: 0,
-                        datetime: new Date(),
-                        message: "Вершины с именем " + vertexName + " нет в исходном графе, попробуйте вершину с другим именем"
-                    }
-                })
-                return true;
+                return {value: true, type: "Неверное имя вершины: вершины с таким именем нет в условии задачи", score: 5};
             }
           }
-          else { return false; }
+          else {
+              return {value: false, type: "", score: 0};
+          }
+        return {value: true, type: "", score: 0}
         }
 
-    public checkWeigth(error: boolean, real: Vertex[], input: Vertex[]) {
-            if (error) {
-                {
-                    store.dispatch({
-                        type: "@@notifier/add_action",
-                        payload: {
-                            fee: 0,
-                            datetime: new Date(),
-                            message: "Так как была введена ошибочная вершина, ее вес так же считается ошибочным"
-                        }
-                    })
-                    return true;
+    public checkWeigth(error: boolean, parent: StabilityTreeNode, vertexName: string, inputVertices: string[]) {
+        // если была введена ошибочная вершина, ее вес так же считается ошибочным
+        if (error) {
+            return {value: true, type: "", score: 0};
+        }
+        else {
+            // проверка множества на наличие вершин, которые не соответствуют вершинам исходного графа
+            const graphVertices = this.graph.vertices.map(v => v.name);
+            console["log"]("graphVertices")
+            console["log"](graphVertices)
+            if (_.difference(inputVertices, graphVertices).length === 0) {
+                const parentVertices = parent.weight.graph.vertices.map(v => v.name);
+                console["log"]("parentVertices")
+                console["log"](parentVertices)
+                if (_.difference(inputVertices, parentVertices).length === 0) {
+                    const vertex = parent.weight.graph.vertices.find(v => v.name === vertexName);
+                    let realVertices: string[] =  [];
+                    if (vertex) {
+                        realVertices = TaskGraph.getNonNeighbourhood(vertex, parent.weight.graph).map(v => v.name);
+                    }
+                    if ((_.difference(inputVertices, realVertices).length === 0) && (_.difference(realVertices, inputVertices).length === 0)) {
+                        return {value: false, type: "", score: 0};
+                    }
+                    else {
+                        return {value: true, type: "Неверное множество вершин: множество содержит вершину, смежную с вершиной-именем узла", score: 5};
+                    }
+                }
+                else {
+                    return {value: true, type: "Неверное множество вершин: множество содержит вершину, которой нет в весе узла-родителя", score: 5};
                 }
             }
             else {
-                // проверяем, что введенное множество вершин соответствует рассчитанной неокрестности вершины
-                // если несоответствие, то записываем ошибку
-                if (real.sort().toString() === input.sort().toString()) {
-                    return false
-                }
-                else {
-                    store.dispatch({
-                        type: "@@notifier/add_action",
-                        payload: {
-                            fee: 0,
-                            datetime: new Date(),
-                            message: "Введеное множество вершин " + input.map(i => i.name) + " неверно"
-                        }
-                    })
-                    return true;
-                }
+                return {value: true, type: "Неверное множество вершин: множество содержит вершину, которой нет в условиях задачи", score: 5};
             }
         }
+    }
 
     private redraw() {
         const edges = d3.select("#g_lines").selectAll('line').data(this.getEdges());
@@ -303,7 +297,7 @@ export default class Tree {
             .on('click', (d) => {
                 return this.changeActive(d.getId());
             })
-        temp1.append('title').text((d) => d.weight.inputWeight.map(v => v.name).join(', '));
+        temp1.append('title').text((d) => d.weight.inputWeight.join(', '));
         temp1.transition().duration(500)
             .attr('cx', d => d.weight.position.x)
             .attr('cy', d => d.weight.position.y)
@@ -325,7 +319,7 @@ export default class Tree {
         labels.text(d => d.getLabel()).transition().duration(500)
             .attr('x', d => d.weight.position.x)
             .attr('y', d => d.weight.position.y + 5);
-        labels.append('title').text((d) => d.weight.inputWeight.map(v => v.name).join(', '));
+        labels.append('title').text((d) => d.weight.inputWeight.join(', '));
 
         const temp2 = labels.enter().append('text')
             .attr('x', (d) => {
@@ -349,7 +343,7 @@ export default class Tree {
         temp2.transition().duration(500)
             .attr('x', d => d.weight.position.x)
             .attr('y', d => d.weight.position.y + 5);
-        temp2.append('title').text((d) => d.weight.inputWeight.map(v => v.name).join(', '));
+        temp2.append('title').text((d) => d.weight.inputWeight.join(', '));
 
         labels.exit().remove();
     }
@@ -409,7 +403,7 @@ export default class Tree {
             .on('click', (d) => {
                 return this.changeActive(d.getId());
             })
-            .append('title').text((d) => d.weight.inputWeight.map(v => v.name).join(', '));
+            .append('title').text((d) => d.weight.inputWeight.join(', '));
 
         d3.select("#treesvg")
             .append('g')
@@ -424,7 +418,7 @@ export default class Tree {
             .on('click', (d) => {
                 return this.changeActive(d.getId());
             })
-            .append('title').text((d) => d.weight.inputWeight.map(v => v.name).join(', '));
+            .append('title').text((d) => d.weight.inputWeight.join(', '));
     }
 
 }

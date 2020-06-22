@@ -1,14 +1,24 @@
 import * as React from 'react';
-import {Template, Toolbar, ToolButtonList, GraphVisualizer} from 'graphlabs.core.template';
+import './App.css';
+import {Template, Toolbar, ToolButtonList, GraphVisualizer, graphModel} from 'graphlabs.core.template';
 import Tree from "./tree";
+import {FunctionComponent} from "react";
 
 class App extends Template {
-    private tree?: Tree;
+    private tree ? : Tree;
 
     constructor(props: {}) {
         super(props);
         this.calculate = this.calculate.bind(this);
-        this.handler = this.handler.bind(this);
+        /*this.handler = this.handler.bind(this);*/
+        this.getArea = this.getArea.bind(this);
+    }
+
+    public task(): FunctionComponent<{}> {
+        return () => (<GraphVisualizer
+                graph={graphModel}
+                adapterType={'readable'}
+        />)
     }
 
     public componentDidMount(): void {
@@ -24,16 +34,10 @@ class App extends Template {
         return { success: res === 0, fee: res };
     }
 
-    public task() {
-        return () => (<div>
-          <div>Найдите все пустые подграфы приведенного ниже графа с помощью алгоритма построения дерева</div>
-          <GraphVisualizer/>
-        </div>)
-    }
-
     public getArea() {
         return (
-            () => <div id={'my-canvas'}/>
+            () => <div id={'my-canvas'}>
+                </div>
           )
     }
 
