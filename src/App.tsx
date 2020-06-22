@@ -14,13 +14,6 @@ class App extends Template {
         this.getArea = this.getArea.bind(this);
     }
 
-    /*public task(): FunctionComponent<{}> {
-        return () => (<GraphVisualizer
-                graph={graphModel}
-                adapterType={'readable'}
-        />)
-    }*/
-
     public componentDidMount(): void {
         this.tree = new Tree();
     }
