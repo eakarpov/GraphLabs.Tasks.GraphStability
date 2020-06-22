@@ -14,12 +14,12 @@ class App extends Template {
         this.getArea = this.getArea.bind(this);
     }
 
-    public task(): FunctionComponent<{}> {
+    /*public task(): FunctionComponent<{}> {
         return () => (<GraphVisualizer
                 graph={graphModel}
                 adapterType={'readable'}
         />)
-    }
+    }*/
 
     public componentDidMount(): void {
         this.tree = new Tree();
@@ -32,6 +32,13 @@ class App extends Template {
     public calculate() {
         const res = 0;
         return { success: res === 0, fee: res };
+    }
+
+    public task() {
+        return () => (<div>
+          <div>Найдите все пустые подграфы приведенного ниже графа с помощью алгоритма построения дерева</div>
+          <GraphVisualizer graph = {graphModel} adapterType = {'readable'} />
+        </div>)
     }
 
     public getArea() {
